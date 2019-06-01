@@ -1,0 +1,26 @@
+{
+  "name": "sonabop",
+  "version": "1.0.0",
+  "description": "Music application built with Electron.js",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "JeydinNewWon",
+  "license": "ISC",
+  "dependencies": {
+    "encodeurl": "^1.0.2",
+    "fluent-ffmpeg": "^2.1.2",
+    "fs-plus": "^3.1.1",
+    "jquery": "^3.4.1",
+    "python-shell": "^1.0.7",
+    "readline": "^1.3.0",
+    "request": "^2.88.0",
+    "unescape": "^1.0.1",
+    "ytdl-core": "^0.29.1"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.3",
+    "electron": "^5.0.1"
+  }
+}

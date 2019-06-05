@@ -1,4 +1,5 @@
 const electron = require('electron');
+const fs = require('fs');
 
 function createWindow() {
     let win = new electron.BrowserWindow({

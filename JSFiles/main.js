@@ -19,10 +19,10 @@ function main() {
         });
     });
 
-
-    $(".video").on('click', (event) => {
+    $('.video').on('click', (event) => {
+        $('.video').removeClass('selected');
+        console.log($('.video'));
         var id = $(event.currentTarget).attr('id');
-        console.log(id);
         $('#' + id).addClass('selected');
     });
 }

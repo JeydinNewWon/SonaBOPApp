@@ -38,11 +38,12 @@
 
 .videogrid {
     display: grid;
-    margin-top: 60px !important;
-    border: 1px solid black;
+    margin-top: 60px;
     grid-template-columns: 32.5% 32.5% 32.5%;
-    width: 85%;
-    margin: 0 auto;
+    width: 80%;
+    margin-left: 20px;
+    float: left;
+    margin-right: -30px;
 }
 
 .videogrid > div {
@@ -50,7 +51,7 @@
     background: white;
     height: 200px;
     padding: 5px;
-    margin-bottom: 40px;
+    margin-bottom: 30px;
     padding: 10px;
 }
 
@@ -61,7 +62,6 @@
 }
 
 .videogrid > div > p {
-    margin-top: 0px;
     display: inline-block;
     font-family:Roboto, Arial, sans-serif;
     font-weight: bold;
@@ -69,6 +69,7 @@
     width: 85%;
     font-size: 14px;
     margin: 0;
+    height: 95%;
 }
 
 .timestamp {
@@ -85,4 +86,16 @@
 
 .selected > img {
     border: 2px solid blue;
+
+}
+
+.playlistbox {
+    display: block;
+    background: pink;
+    height: 1000px;
+    width: 250px;
+    float: right;
+    margin-top: 60px;
+    margin-right: 40px;
+
 }

@@ -1,93 +1,10 @@
-@import url("body.css");
-@import url("header.css");
+@import url("modules/body.css");
+@import url("modules/header.css");
+@import url('modules/search.css');
+@import url('modules/video.css');
+@import url('modules/videogrid.css');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
-
-#searchwrap {
-    margin: 0 auto;
-    text-align: center;
-    display: block;
-    padding: 30px;
-    box-sizing: border-box;
-}
-
-#searchwrap h1 {
-    margin-bottom: 0px;
-    margin-top: 60px;
-    font-size: 60px;
-    font-family: 'Open Sans', sans-serif;
-    font-weight: 20;
-}
-
-#searchquery {
-    margin-top: 60px;
-    margin-bottom: 100px;
-    height: 50px;
-    width: 400px;
-    border-radius: 10px;
-    font-size: 20px;
-    padding-left: 10px;
-    padding-right: 10px;
-    line-height: 50px;
-}
-
-#submit {
-    display: inline-block;
-    margin-top: 10px;
-}
-
-.videogrid {
-    display: grid;
-    margin-top: 60px;
-    grid-template-columns: 32.5% 32.5% 32.5%;
-    width: 80%;
-    margin-left: 20px;
-    float: left;
-    margin-right: -30px;
-}
-
-.videogrid > div {
-    text-align: left;
-    background: white;
-    height: 200px;
-    padding: 5px;
-    margin-bottom: 30px;
-    padding: 10px;
-}
-
-.videogrid img {
-    height: 180px;
-    width: 85%;
-    margin: 0;
-}
-
-.videogrid > div > p {
-    display: inline-block;
-    font-family:Roboto, Arial, sans-serif;
-    font-weight: bold;
-    word-wrap: break-word;
-    width: 85%;
-    font-size: 14px;
-    margin: 0;
-    height: 95%;
-}
-
-.timestamp {
-    position: relative;
-    display: inline-block;
-    background: rgba(0, 0, 0, 0.7);
-    border-radius: 0.5px;
-    color: white;
-    font-family: Roboto, Arial, sans-serif;
-    font-weight: bold;
-    bottom: 5%;
-    right: 15%;
-}
-
-.selected > img {
-    border: 2px solid blue;
-
-}
 
 .playlistbox {
     display: block;

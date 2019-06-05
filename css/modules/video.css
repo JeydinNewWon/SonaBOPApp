@@ -1,0 +1,33 @@
+.videogrid img {
+    height: 180px;
+    width: 85%;
+    margin: 0;
+}
+
+.videogrid > div > p {
+    display: inline-block;
+    font-family:Roboto, Arial, sans-serif;
+    font-weight: bold;
+    word-wrap: break-word;
+    width: 85%;
+    font-size: 14px;
+    margin: 0;
+    height: 95%;
+}
+
+.timestamp {
+    position: relative;
+    display: inline-block;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 0.5px;
+    color: white;
+    font-family: Roboto, Arial, sans-serif;
+    font-weight: bold;
+    bottom: 5%;
+    right: 15%;
+}
+
+.selected > img {
+    border: 2px solid blue;
+
+}

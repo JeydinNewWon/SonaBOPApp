@@ -58,7 +58,12 @@ function main() {
 
                     var duration = idResult.contentDetails.duration;
                     var durationObject = timeConverter.parse(duration);
-                    var formattedTime = durationObject.hours > 0 ? `${durationObject.hours}:${durationObject.minutes}:${durationObject.seconds}` : `${durationObject.minutes}:${durationObject.seconds}`;
+
+                    var hours = durationObject.hours.toString().length === 1 ? `0${durationObject.hours}` : `${durationObject.hours}`;
+                    var minutes = durationObject.minutes.toString().length === 1 ? `0${durationObject.minutes}` : `${durationObject.minutes}`;
+                    var seconds = durationObject.seconds.toString().length === 1 ? `0${durationObject.seconds}` : `${durationObject.seconds}`;
+
+                    var formattedTime = durationObject.hours > 0 ? `${hours}:${minutes}:${seconds}` : `${minutes}:${seconds}`;
 
                     //accomodates for proper css formatting when including hours in the timestamp.
                     var classGenerator = durationObject.hours > 0 ? `timestamp hashours` : `timestamp`;

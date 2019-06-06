@@ -4,6 +4,7 @@ const searchForVideo = require('./utils/search.js').searchForVideo;
 const searchForDurations = require('./utils/search.js').searchForDurations;
 const encodeurl = require('encodeurl');
 const decodeurl = require('unescape');
+const timeConverter = require('iso8601-duration');
 const youtubeAPIKey = config.youtubeAPIKey;
 
 function main() {
@@ -49,13 +50,35 @@ function main() {
             searchForDurations(videoIDSCSV, (rsp) => {
                 var counter = 1
                 rsp.items.forEach((idResult) => {
-                    $('.videogrid').append(`<div class="video" id="video${counter}"><i</div>`)
+                    var videoID = idResult.id;
+                    var thumbnailURL = videoData[videoID]['thumbnailURL'];
+                    var title = videoData[videoID]['title'];
+
+                    var duration = idResult.contentDetails.duration;
+                    var durationObject = timeConverter.parse(duration);
+                    var formattedTime = durationObject.hours > 0 ? `${durationObject.hours}:${durationObject.minutes}:${durationObject.seconds}` : `${durationObject.minutes}:${durationObject.seconds}`;
+
+                    //accomodates for proper css formatting when including hours in the timestamp.
+                    var classGenerator = durationObject.hours > 0 ? `timestamp hashours` : `timestamp`;
+                    $('.videogrid').append(
+                        `<div class="video" id="video${counter}" data-id="${idResult.id}"> 
+                            <img src="${thumbnailURL}"> 
+                            <span class="${classGenerator}">${formattedTime}</span>
+                            <p>${title}</p>
+                        </div>`
+                        );
+
+                    counter += 1
                 });
+
+                videoSelectorEvent();
             });
 
         });
     });
+}
 
+function videoSelectorEvent() {
     $('.video').on('click', (event) => {
         $('.video').removeClass('selected');
         var id = $(event.currentTarget).attr('id');

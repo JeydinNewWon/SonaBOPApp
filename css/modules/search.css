@@ -15,8 +15,8 @@
 }
 
 #searchquery {
-    margin-top: 60px;
-    margin-bottom: 100px;
+    margin-top: 40px;
+    margin-bottom: 40px;
     height: 50px;
     width: 400px;
     border-radius: 10px;
@@ -28,5 +28,16 @@
 
 #submit {
     display: inline-block;
-    margin-top: 10px;
+    padding: 10px;
+    height: 60px;
+    width: 150px;
+    background: blue;
+    font-family: Open Sans, sans-serif;
+    font-size: 20px;
+    color: white;
+    border-radius: 10px;
+}
+
+#submit:hover {
+    cursor: pointer;
 }

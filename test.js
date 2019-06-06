@@ -4,6 +4,7 @@ const request = require('request');
 const encodeurl = require('encodeurl');
 const decode = require('unescape');
 const youtubeAPIKey = config.youtubeAPIKey;
+const timeConverter = require('iso8601-duration');
 
 function searchForVideo(searchquery, cb) {
 
@@ -24,6 +25,15 @@ function searchForVideo(searchquery, cb) {
     });
 }
 
-searchForVideo('when leblanc gets reverted', (rsp) => {
-    console.log(rsp.items[0].snippet.thumbnails);
+function ids(cb) {
+    request.get(`https://www.googleapis.com/youtube/v3/videos/?part=contentDetails&id=HYmn5BQIxdQ&key=${youtubeAPIKey}`, (err, rsp, body) => {
+        cb(JSON.parse(rsp.body));
+    });
+}
+
+ids((rsp) => {
+    var time = rsp.items[0].contentDetails.duration;
+    var formattedTime = timeConverter.parse(time);
+
+    console.log(`${formattedTime.minutes}:${formattedTime.seconds}`);
 });

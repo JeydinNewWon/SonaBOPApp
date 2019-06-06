@@ -1,36 +1,65 @@
 global.$ = require('jquery');
 const config = require('../config/config.json');
-const request = require('request');
+const searchForVideo = require('./utils/search.js').searchForVideo;
+const searchForDurations = require('./utils/search.js').searchForDurations;
 const encodeurl = require('encodeurl');
 const decodeurl = require('unescape');
 const youtubeAPIKey = config.youtubeAPIKey;
 
 function main() {
-    $("#searchwrap").on('submit', (event) => {
+    $('#searchwrap').on('submit', (event) => {
         event.preventDefault();
+        // checks if error msg element exists.
+        if ($('#errormsg').length) {
+            $('#errormsg').remove();
+        }
 
-        var searchquery = $("#searchquery").text();
+        var searchQuery = $("#searchquery").val();
 
-        searchForVideo(searchquery, (rsp) => {
-            
+        if (searchQuery == '') {
+            $('#searchwrap > h1').after('<p id="errormsg">Please enter a valid search query.</p>');
+            return;
+        }
+
+        searchForVideo(searchQuery, (rsp) => {
+            if ($('#searchwrap').length) {
+                $('#searchwrap').remove();
+            }
+
+            $('body').append('<div class="videogrid"></div> <div class="playlistbox"><ul><li>mood</li></ul></div>');
+
+            var videoIDSCSV = '';
+
+            var videoData = {};
+
+            rsp.items.forEach((video) => {
+                var thumbnailURL = video.snippet.thumbnails.high.url;
+                var title = video.snippet.title;
+                var videoID = video.id.videoId;
+
+                var videoDataObject = {
+                    'title': title,
+                    'thumbnailURL': thumbnailURL,
+                }
+
+                videoData[videoID] = videoDataObject;
+                videoIDSCSV += `${videoID}%2C`;
+            });
+
+            searchForDurations(videoIDSCSV, (rsp) => {
+                var counter = 1
+                rsp.items.forEach((idResult) => {
+                    $('.videogrid').append(`<div class="video" id="video${counter}"><i</div>`)
+                });
+            });
 
         });
     });
 
     $('.video').on('click', (event) => {
         $('.video').removeClass('selected');
-        console.log($('.video'));
         var id = $(event.currentTarget).attr('id');
         $('#' + id).addClass('selected');
-    });
-}
-
-function searchForVideo(searchquery, cb) {
-
-    var encodedquery = encodeurl(searchquery);
-    
-    request.get(`https://www.googleapis.com/youtube/v3/search/?part=snipper&q=${encodedquery}&maxResults=10&key=${youtubeAPIKey}`, (err, rsp, body) => {
-        cb(JSON.parse(rsp.body));
     });
 }
 

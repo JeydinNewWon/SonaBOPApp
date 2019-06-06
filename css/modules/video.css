@@ -1,7 +1,7 @@
 .videogrid img {
     height: 180px;
     width: 85%;
-    margin: 0;
+    margin-left: -10px;
 }
 
 .videogrid > div > p {
@@ -25,6 +25,7 @@
     font-weight: bold;
     bottom: 5%;
     right: 15%;
+
 }
 
 .selected > img {

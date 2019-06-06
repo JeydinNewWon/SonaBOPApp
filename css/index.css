@@ -2,17 +2,32 @@
 @import url("modules/header.css");
 @import url('modules/search.css');
 @import url('modules/video.css');
+@import url('modules/errormsg.css');
 @import url('modules/videogrid.css');
 @import url('https://fonts.googleapis.com/css?family=Open+Sans');
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
 .playlistbox {
     display: block;
-    background: pink;
+    background: #f2f4f6;
     height: 1000px;
-    width: 250px;
+    width: 18%;
     float: right;
     margin-top: 60px;
-    margin-right: 40px;
+    margin-right: 30px;
+    border-radius: 5px;
+    font-family: Roboto, Arial, sans-serif;
+    box-sizing: border-box;
+    padding: 10px;
+    align-items: center;
+}
 
+.playlistbox ul {
+    text-align: center;
+    list-style: none;
+}
+
+.playlistbox li {
+    margin-bottom: 10px;
+    background: white;
 }

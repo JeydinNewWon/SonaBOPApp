@@ -10,6 +10,10 @@ const timeConverter = require('iso8601-duration');
 const youtubeAPIKey = config.youtubeAPIKey;
 
 function main() {
+    submitButtonEvent();
+}
+
+function submitButtonEvent() {
     $('#searchwrap').on('submit', (event) => {
         event.preventDefault();
         // checks if error msg element exists.
@@ -29,7 +33,7 @@ function main() {
                 $('#searchwrap').remove();
             }
 
-            $('body').append('<div class="videogrid"></div> <div class="playlistbox"><ul><li>mood</li></ul></div>');
+            $('body').append('<div class="videogridbuttons"> <div class="returnbutton"> Go Back </div><audio class="musicplayer" controls> <source src="" type="audio/mpeg"> </audio> <div class="downloadbutton"> Download </div></div> <div class="videogrid"></div> <div class="playlistbox"><ul><li>mood</li></ul></div>');
 
             var videoIDSCSV = '';
 
@@ -79,6 +83,7 @@ function main() {
                 });
 
                 videoSelectorEvent();
+                videoGridButtonsEvent();
             });
 
         });
@@ -93,7 +98,22 @@ function videoSelectorEvent() {
     });
 }
 
-$(document).ready(main)
+function videoGridButtonsEvent() {
+    $('.returnbutton').on('click', () => {
+        $('body').empty();
+        $('body').before('<header></header>');
+        $('body').append(`<form id="searchwrap"> <h1>Search video to stream</h1> <input type="text" name="searchquery" id="searchquery"> <br> <input id="submit" type="submit" value="Submit"> </form>`);
+        submitButtonEvent();
+    });
+
+    $('.downloadbutton').on('click', () => {
+
+    });
+
+
+}
+
+$(document).ready(main);
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{"../config/config.json":3,"./utils/search.js":2,"encodeurl":64,"iso8601-duration":100,"jquery":102,"unescape":169}],2:[function(require,module,exports){
 const request = require('request');

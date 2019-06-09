@@ -3,7 +3,7 @@ global.$ = require('jquery');
 //const searchForDurations = require('./utils/search.js').searchForDurations;
 const timeConverter = require('iso8601-duration');
 const electron = require('electron');
-
+const fs = require('browserify-fs');
 const request = require('request');
 const encodeurl = require('encodeurl');
 const config = require('../config/config.json');
@@ -119,20 +119,71 @@ function videoSelectorEvent() {
 
 function videoGridButtonsEvent() {
     $('.returnbutton').on('click', () => {
-        $('body').empty();
-        $('body').before('<header></header>');
-        $('body').append(`<form id="searchwrap"> <h1>Search video to stream</h1> <input type="text" name="searchquery" id="searchquery"> <br> <input id="submit" type="submit" value="Submit"> </form>`);
+        $('.videogrid').remove();
+        $('.returnbutton').remove();
+        $('.downloadbutton').remove();
+        $('body').addClass('home')
+                 .append(`<form id="searchwrap"> <h1>Search video to stream</h1> <input type="text" name="searchquery" id="searchquery"> <br> <input id="submit" type="submit" value="Submit"> </form>`);
         submitButtonEvent();
     });
 
     $('.downloadbutton').on('click', () => {
+        electron.ipcRenderer.removeAllListeners('confirm-download');
+
+        if ($('#errormsg').length) {
+            $('#errormsg').remove();
+        }
+        if (!$('.selected').length) {
+            $('.videogrid').before('<p id="errormsg" style="margin-left:30px">Please select a video before downloading.</p>');
+            return;
+        }
+
         var selectedVideoID = $('.selected').attr('data-id');
+        var duration = $('.selected > span').text();
         var videoTitle = $('.selected > p').text();
-        electron.ipcRenderer.send('asynchronous-message', selectedVideoID);
-        electron.ipcRenderer.on('asynchronous-reply', (event, arg) => {
-            console.log(videoTitle);
+
+        electron.ipcRenderer.send('download-video', selectedVideoID);
+        electron.ipcRenderer.on('confirm-download', (event, arg) => {
+            $('.playlistbox ul').append(`<li data-id="${selectedVideoID}"><p><i>${videoTitle}</i></p><span>${duration}</span><span class="delete"></span></li>`);
+            removeMusicEvent(); 
+            var musicplayer = $('#musicplayer')[0];
+            if (musicplayer.paused || $('.playlistbox ul').children().length === 1) {
+                $('#musicplayer').attr("src", `../MusicData/${selectedVideoID}.mp3`);
+                $('#musicplayer').trigger('play');
+            }
+
+            musicplayer.onended = function() {
+                electron.ipcRenderer.removeAllListeners('confirm-remove');
+                var toBeRemoved = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+                $('.playlistbox ul li:nth-of-type(1)').remove();
+                console.log($(`.playlistbox ul li[data-id=${toBeRemoved}]`).length);
+                if ($(`.playlistbox[data-id=${toBeRemoved}]`).length >= 1) {
+                    console.log('mood');
+                    playListLogic(toBeRemoved);
+                } else {
+                    electron.ipcRenderer.send('remove-mp3', toBeRemoved);
+                    electron.ipcRenderer.on('confirm-remove', (event, arg) => {
+                        console.log('meeeee');
+                        playListLogic(toBeRemoved);
+                    });
+                }
+            }
         });
     });
+}
+
+function removeMusicEvent() {
+    $('.delete').on('click', (event) => {
+        $(event.currentTarget.parentElement).remove();
+    });
+}
+
+function playListLogic(selectedVideoID) {
+    if ($('.playlistbox ul').children().length > 0) {
+        selectedVideoID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+        $('#musicplayer').attr("src", `../MusicData/${selectedVideoID}.mp3`);
+        $('#musicplayer').trigger('play');
+    }
 }
 
 

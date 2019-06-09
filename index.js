@@ -19,7 +19,7 @@ if (!fs.existsSync('./MusicData/')) {
     fs.mkdirSync('./MusicData/');
 }
 
-electron.ipcMain.on('asynchronous-message', (event, arg) => {
+electron.ipcMain.on('download-video', (event, arg) => {
     ffmpeg.setFfmpegPath('./bin/ffmpeg');
     var stream = ytdl(arg, {
         quality: "highestaudio"
@@ -28,9 +28,19 @@ electron.ipcMain.on('asynchronous-message', (event, arg) => {
         .audioBitrate(128)
         .save(`./MusicData/${arg}.mp3`)
         .on('end', () => {
-            event.sender.send('asynchronous-reply', 'done');
+            event.sender.send('confirm-download', 'done');
         });
 });
+
+electron.ipcMain.on('remove-mp3', (event, arg) => {
+    fs.unlink(`./MusicData/${arg}.mp3`, (err) => {
+        if (err) {
+            event.sender.send('confirm-remove', err);
+        } else {
+            event.sender.send('confirm-remove', 'done');
+        }
+    });
+})
 
 /*
 function downloader(videoURL, cb) {

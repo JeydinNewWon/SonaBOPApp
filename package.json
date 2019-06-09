@@ -10,8 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "browserify-fs": "^1.0.0",
+    "electron": "^5.0.3",
     "encodeurl": "^1.0.2",
-    "ffmpeg.js": "^3.1.9001",
     "fluent-ffmpeg": "^2.1.2",
     "fs-plus": "^3.1.1",
     "iso8601-duration": "^1.2.0",
@@ -23,7 +23,6 @@
     "ytdl-core": "^0.29.2"
   },
   "devDependencies": {
-    "browserify": "^16.2.3",
-    "electron": "^5.0.1"
+    "browserify": "^16.2.3"
   }
 }

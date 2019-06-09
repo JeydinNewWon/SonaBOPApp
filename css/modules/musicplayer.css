@@ -1,9 +1,9 @@
-.musicplayer {
+#musicplayer {
     display: inline-block;
     margin-left: 30px;
 }
 
-.home .musicplayer {
+.home #musicplayer {
     float: left;
     position: relative;
     left: calc(50% - 200px);

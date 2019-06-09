@@ -1,0 +1,10 @@
+.musicplayer {
+    display: inline-block;
+    margin-left: 30px;
+}
+
+.home .musicplayer {
+    float: left;
+    position: relative;
+    left: calc(50% - 200px);
+}

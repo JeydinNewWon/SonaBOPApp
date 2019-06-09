@@ -3,11 +3,11 @@ import sys
 
 options = {
     "format": "bestaudio/best",
-    "ffmpeg_location": "../bin/ffmpeg",
+    "ffmpeg_location": "./bin/ffmpeg",
     "extractaudio": True,
     "audioformat": "mp3",
     "default_search": "auto",
-    "outtmpl": "~/Desktop/Music/%(title)s.%(ext)s",
+    "outtmpl": "~/Desktop/%(title)s.%(ext)s",
     "no_warnings": True,
     'postprocessors': [{
         'key': 'FFmpegExtractAudio',

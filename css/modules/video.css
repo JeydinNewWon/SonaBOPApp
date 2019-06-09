@@ -13,6 +13,7 @@
     font-size: 14px;
     margin: 0;
     height: 95%;
+    color: white;
 }
 
 .timestamp {
@@ -25,7 +26,11 @@
     font-weight: bold;
     bottom: 5%;
     right: 15%;
+    margin: 0;
+}
 
+.hashours {
+    margin-left: -25px;
 }
 
 .selected > img {

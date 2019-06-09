@@ -1,15 +1,18 @@
-const ps = require('python-shell');
+/*
+const ytdl = require('ytdl-core');
+const ffmpeg = require('fluent-ffmpeg');
 
 function downloader(videoURL, cb) {
-    var opts = {
-        mode: 'text',
-        args: [videoURL]
-    }
-
-    ps.PythonShell.run('../../downloader/downloader.py', opts, () => {
-        
-    });
+    ffmpeg.setFfmpegPath('../../bin/ffmpeg');
+    var stream = ytdl(videoURL, { quality: "highestaudio" } );
+    ffmpeg(stream)
+        .audioBitrate(128)
+        .save(`../../MusicData/${videoURL}.mp3`)
+        .on('end', () => {
+            cb('done');
+        });
 }
 
-
-module.exports = downloader;
+downloader('GO0PtD02qqg', (output) => {
+    console.log(output);
+});*/

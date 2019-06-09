@@ -1,8 +1,29 @@
 global.$ = require('jquery');
-const config = require('../config/config.json');
-const searchForVideo = require('./utils/search.js').searchForVideo;
-const searchForDurations = require('./utils/search.js').searchForDurations;
+//const searchForVideo = require('./utils/search.js').searchForVideo;
+//const searchForDurations = require('./utils/search.js').searchForDurations;
 const timeConverter = require('iso8601-duration');
+const electron = require('electron');
+
+const request = require('request');
+const encodeurl = require('encodeurl');
+const config = require('../config/config.json');
+const youtubeAPIKey = config.youtubeAPIKey;
+
+function searchForVideo(searchquery, cb) {
+
+    var encodedquery = encodeurl(searchquery);
+    
+    request.get(`https://www.googleapis.com/youtube/v3/search/?part=snippet&q=${encodedquery}&maxResults=10&key=${youtubeAPIKey}`, (err, rsp, body) => {
+        cb(JSON.parse(rsp.body));
+    });
+}
+
+function searchForDurations(videoIDCSV, cb) {
+    request.get(`https://www.googleapis.com/youtube/v3/videos/?part=contentDetails&id=${videoIDCSV}&key=${youtubeAPIKey}`, (err, rsp, body ) => {
+        cb(JSON.parse(rsp.body));
+    });
+}
+
 
 function main() {
     submitButtonEvent();
@@ -28,7 +49,9 @@ function submitButtonEvent() {
                 $('#searchwrap').remove();
             }
 
-            $('body').append('<div class="videogridbuttons"> <div class="returnbutton"> Go Back </div><audio class="musicplayer" controls> <source src="" type="audio/mpeg"> </audio> <div class="downloadbutton"> Download </div></div> <div class="videogrid"></div> <div class="playlistbox"><ul><li>mood</li></ul></div>');
+            $('body').removeClass('home');
+            $('.videogridbuttons').after('<div class="videogrid"></div>');
+            $('.videogridbuttons').append('<div class="returnbutton">Go Back</div> <div class="downloadbutton">Download</div>');
 
             var videoIDSCSV = '';
 
@@ -66,6 +89,7 @@ function submitButtonEvent() {
 
                     //accomodates for proper css formatting when including hours in the timestamp.
                     var classGenerator = durationObject.hours > 0 ? `timestamp hashours` : `timestamp`;
+
                     $('.videogrid').append(
                         `<div class="video" id="video${counter}" data-id="${idResult.id}"> 
                             <img src="${thumbnailURL}"> 
@@ -74,7 +98,7 @@ function submitButtonEvent() {
                         </div>`
                         );
 
-                    counter += 1
+                    counter += 1;
                 });
 
                 videoSelectorEvent();
@@ -102,8 +126,14 @@ function videoGridButtonsEvent() {
     });
 
     $('.downloadbutton').on('click', () => {
-
+        var selectedVideoID = $('.selected').attr('data-id');
+        var videoTitle = $('.selected > p').text();
+        electron.ipcRenderer.send('asynchronous-message', selectedVideoID);
+        electron.ipcRenderer.on('asynchronous-reply', (event, arg) => {
+            console.log(videoTitle);
+        });
     });
 }
+
 
 $(document).ready(main);

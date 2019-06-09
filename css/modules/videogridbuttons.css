@@ -1,0 +1,36 @@
+.videogridbuttons {
+    width: 98%;
+    height: 50px;
+    line-height: 50px;
+    background: #21252B;
+    margin-top: 0px;
+    height: 60px;
+    padding: 10px;
+}
+
+.videogridbuttons div {
+    height: 50px;
+    width: 150px;
+    display: block;
+    background: #71e2a6;
+    font-family: Open Sans, sans-serif;
+    font-size: 20px;
+    color: white;
+    line-height: 50px;
+    text-align: center;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    border-radius: 5px;
+}
+.returnbutton {
+    float:left;
+    margin-left: 30px;
+}
+.downloadbutton {
+    float: right;
+    margin-right: 20px;
+}
+
+.returnbutton:hover, .downloadbutton:hover {
+    cursor: pointer;
+}

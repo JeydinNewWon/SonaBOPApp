@@ -1,5 +1,5 @@
 # SonaBOP
-***
+
 SonaBOP App is an application developed for downloading music and streaming it within your Desktop. Built using the electron library.
 
 

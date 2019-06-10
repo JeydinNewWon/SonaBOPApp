@@ -6,7 +6,7 @@ const ffmpeg = require('fluent-ffmpeg');
 const ncp = require('ncp').ncp;
 const jsonfile = require('jsonfile');
 const appRootDir = require('app-root-dir').get();
-const ffmpegPath = appRootDir + '/node_modules/ffmpeg/ffmpeg';
+const ffmpegPath = appRootDir + '/node_modules/ffmpeg-static/bin/darwin/x64/ffmpeg';
 const userDataPath = electron.app.getPath('userData');
 const musicDataPath = `${userDataPath}/MusicData`;
 

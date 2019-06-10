@@ -1,4 +1,2 @@
-electron = require('electron');
-
-electron.ipcRenderer.send('asynchronous-message', 'async ping');
-
+const ffmpegStatic = require('ffmpeg-static');
+console.log(ffmpegStatic.path);

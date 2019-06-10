@@ -2,3 +2,4 @@ bin/
 .DS_STORE
 node_modules/
 MusicData/
+SonaBOP-darwin-x64/

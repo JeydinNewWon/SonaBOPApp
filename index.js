@@ -18,15 +18,23 @@ function createWindow() {
             nodeIntegration: true
         }
     });
-
     win.loadFile('html/index.html');
-
 }
 
 
 if (!fs.existsSync(musicDataPath)) {
     shell.mkdir('-p', `${musicDataPath}/main`);
 }
+
+electron.app.on('quit', () => {
+    fs.readdir(`${musicDataPath}/main`, (err, files) => {
+        files.forEach((file) => {
+            fs.unlink(`${musicDataPath}/main/${file}`, (err) => {
+                if (err) throw err;
+            });
+        });
+    })
+});
 
 
 electron.ipcMain.on('download-video', (event, arg) => {
@@ -77,22 +85,11 @@ electron.ipcMain.on('save-playlist-folders', (event, playlistName, playlistConte
     }
 });
 
-
-
-/*
-function downloader(videoURL, cb) {
-    ffmpeg.setFfmpegPath('./bin/ffmpeg');
-    var stream = ytdl(videoURL, { quality: "highestaudio" } );
-    ffmpeg(stream)
-        .audioBitrate(128)
-        .save(`./MusicData/${videoURL}.mp3`)
-        .on('end', () => {
-            cb('done');
-        });
-}
-
-downloader('GO0PtD02qqg', (output) => {
-    console.log(output);
+electron.ipcMain.on('read-playlist', (event, playListToLoad) => {
+    var playListToLoadPath = `${musicDataPath}/${playListToLoad}`;
+    jsonfile.readFile(`${playListToLoadPath}/info.json`, (err, obj) => {
+        event.sender.send('read-playlist-rsp', playListToLoadPath, userDataPath, obj);
+    });
 });
-*/
+
 electron.app.on('ready', createWindow);

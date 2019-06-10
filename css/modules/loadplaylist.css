@@ -3,12 +3,14 @@
     position: absolute;
     color: black;
     font-family: 'Open Sans', sans-serif;
+    font-size: 20px;
     display: none;
     height: 50%;
     left: 10%;
     width: 800px;
     text-align: center;
     background: #282C35;
+    overflow: scroll;
 }
 
 .loadplaylist ul {
@@ -20,6 +22,11 @@
 .loadplaylist ul li {
     background: white;
     margin-bottom: 10px;
+    padding: 10px;
+}
+.loadplaylist ul li:hover {
+    cursor: pointer;
+    background: #7289DA;
 }
 
 #loadcancelbutton {

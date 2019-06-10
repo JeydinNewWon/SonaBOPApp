@@ -144,6 +144,8 @@ function videoGridButtonsEvent() {
             return;
         }
 
+        $('.videogrid').before('<p id="confirmmsg">Downloading...</p>')
+
         var selectedVideoID = $('.selected').attr('data-id');
         var duration = $('.selected > span').text();
         var videoTitle = $('.selected > p').text();
@@ -151,12 +153,17 @@ function videoGridButtonsEvent() {
         electron.ipcRenderer.send('download-video', selectedVideoID);
         electron.ipcRenderer.on('confirm-download', (event, userDataPath) => {
             $('.playlistbox ul').append(`<li data-id="${selectedVideoID}"><p><i>${videoTitle}</i></p><span class="playlistduration">${duration}</span><span class="delete"></span></li>`);
+            $('#confirmmsg').text('Succesfully added to Queue.');
             removeMusicEvent(); 
             var musicplayer = $('#musicplayer')[0];
             if (musicplayer.paused || $('.playlistbox ul').children().length === 1) {
                 $('#musicplayer').attr("src", `${userDataPath}/MusicData/main/${selectedVideoID}.mp3`);
                 $('#musicplayer').trigger('play');
             }
+
+            setTimeout(() => {
+                $('#confirmmsg').remove();
+            }, 3000);
 
             musicplayer.onended = function() {
                 electron.ipcRenderer.removeAllListeners('confirm-remove');
@@ -165,16 +172,15 @@ function videoGridButtonsEvent() {
                 if ($(`.playlistbox ul li[data-id=${toBeRemovedID}]`).length >= 1) {
                     var currentPlayingSongID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
                     if (currentPlayingSongID === toBeRemovedID) {
-                        playListLogic(userDataPath, toBeRemovedID);
+                        playListLogic(userDataPath, 'main', toBeRemovedID);
                     } else {
                         
-                        playListLogic(userDataPath, currentPlayingSongID);
+                        playListLogic(userDataPath, 'main', currentPlayingSongID);
                     }
                 } else {
                     electron.ipcRenderer.send('remove-mp3', toBeRemovedID);
                     electron.ipcRenderer.on('confirm-remove', (event, userDataPath) => {
-                        console.log('meeeee');
-                        playListLogic(userDataPath, toBeRemovedID);
+                        playListLogic(userDataPath, 'main', toBeRemovedID);
                     });
                 }
             }
@@ -193,6 +199,7 @@ function loadPlaylistEvents() {
                     $('.loadplaylist ul').append(`<li>${folder}</li>`);
                 }
             });
+            readPlaylistEvent();
         });
     });
 
@@ -201,7 +208,7 @@ function loadPlaylistEvents() {
             $('#errormsg').remove();
         }
 
-        prompt({ title: 'Save Playlist' , value: 'Please enter Playlist name'}).then((playListName) => {
+        prompt({ title: 'Save Playlist' , label: 'Enter Playlist Name: '}).then((playListName) => {
             if (playListName === null) {
                 return;
             } else {
@@ -212,8 +219,9 @@ function loadPlaylistEvents() {
                     if ($('.videogrid').length) {
                         $('.videogrid').before(`<p id="errormsg">Please add items to the playlist</p>`);
                     } else {
-                        $('#searchwrap > h1').after('<p id="errormsg">Please add items to the playlist</p>')
+                        $('#searchwrap > h1').after('<p id="errormsg">Please add items to the playlist</p>');
                     }
+                    return;
                 }
         
                 $('.playlistbox ul li').toArray().forEach(() => {
@@ -233,18 +241,54 @@ function loadPlaylistEvents() {
 
                 electron.ipcRenderer.send('save-playlist-folders', playListName, playlistContents);
                 electron.ipcRenderer.once('confirm-save-playlist-folders', (event, rsp) => {
-                    console.log(rsp);
-                })
+                    if ($('.videogrid').length) {
+                        $('.videogrid').before(`<p id="confirmmsg">Successfully saved playlist!</p>`);
+                        setTimeout(() => {
+                            $('#confirmmsg').remove();
+                        }, 3000);
+                    } else {
+                        $('#searchwrap > h1').after('<p id="confirmmsg">Successfully saved playlist!</p>');
+                        setTimeout(() => {
+                            $('#confirmmsg').remove();
+                        }, 3000);
+                    }
+                });
             }
         }).catch((err) => {
-            if (err) console.log(err);
+            if (err) console.err(err);
         });
     });
 
     $('#loadcancelbutton').on('click', () => {
-        $('.loadplaylist').css('display', 'none');
-        $('.loadplaylist ul li').remove();
-        $('#loadbutton').css('display', 'block');
+        loadPlayListTools();
+    });
+}
+
+function readPlaylistEvent() {
+    $('.loadplaylist ul li').on('click', (event) => {
+        var playListToLoad = $(event.currentTarget).text();
+        electron.ipcRenderer.send('read-playlist', playListToLoad);
+        electron.ipcRenderer.once('read-playlist-rsp', (event, playListToLoadPath, userDataPath, obj) => {
+            loadPlayListTools();
+            $('.playlistbox ul li').remove();
+            var videoIDS = Object.keys(obj);
+            videoIDS = videoIDS.reverse();
+            videoIDS.forEach((id) => {
+                $('.playlistbox ul').append(`<li data-id="${id}"><p><i>${obj[id]["title"]}</i></p><span class="playlistduration">${obj[id]["duration"]}</span><span class="delete"></span></li>`);
+            });
+            $('#musicplayer').attr('src', `${playListToLoadPath}/${videoIDS[0]}.mp3`);
+            $('#musicplayer').trigger('play');
+
+            var musicplayer = $('#musicplayer')[0];
+
+            musicplayer.onended = function() {
+                var toBeRemovedID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+                $('.playlistbox ul li:nth-of-type(1)').remove();
+                var currentPlayingSongID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+                playListLogic(userDataPath, playListToLoad, currentPlayingSongID);
+            }
+
+        });
     });
 }
 
@@ -254,11 +298,16 @@ function removeMusicEvent() {
     });
 }
 
+function loadPlayListTools() {
+    $('.loadplaylist').css('display', 'none');
+    $('.loadplaylist ul li').remove();
+    $('#loadbutton').css('display', 'block');
+}
 
-function playListLogic(userDataPath, selectedVideoID) {
+function playListLogic(userDataPath, playListName, selectedVideoID) {
     if ($('.playlistbox ul').children().length > 0) {
         selectedVideoID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
-        $('#musicplayer').attr("src", `${userDataPath}/MusicData/main/${selectedVideoID}.mp3`);
+        $('#musicplayer').attr("src", `${userDataPath}/MusicData/${playListName}/${selectedVideoID}.mp3`);
         $('#musicplayer').trigger('play');
     }
 }

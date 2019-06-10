@@ -32,7 +32,7 @@
     bottom: 80px;
 }
 
-#savebutton, #loadbutton {
+#savebutton, #loadbutton, #loadcancelbutton {
     display: block;
     height: 35px;
     width: 150px;
@@ -45,4 +45,12 @@
     padding: 10px;
     border-radius: 5px;
     color: white;
+}
+
+#loadbutton {
+    background: #7289DA !important;
+}
+
+#savebutton:hover, #loadbutton:hover, #loadcancelbutton:hover {
+    cursor: pointer;
 }

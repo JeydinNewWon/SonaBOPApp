@@ -1,16 +1,9 @@
-const ps = require('python-shell');
-
-function downloader(videoURL, cb) {
-    var opts = {
-        mode: 'text',
-        args: [videoURL]
+var fs = require('fs');
+const path = require('path');
+const pathname = path.join(__dirname, 'html');
+fs.readdir(pathname, (err, files) => {
+    if (err) {
+        console.log(err);
     }
-
-    ps.PythonShell.run('downloader/downloader.py', opts, (err, output) => {
-        cb(output);
-    });
-}
-
-downloader('https://www.youtube.com/watch?v=HYmn5BQIxdQ', (output) => {
-    console.log(output);
+    console.log(files);
 });

@@ -4,11 +4,13 @@
   "description": "Music application built with Electron.js",
   "main": "index.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-packager --icon=\"./SonaBOPIcon.icns\" . SonaBOP"
   },
   "author": "JeydinNewWon",
   "license": "ISC",
   "dependencies": {
+    "app-root-dir": "^1.0.2",
     "browserify-fs": "^1.0.0",
     "electron": "^5.0.3",
     "encodeurl": "^1.0.2",
@@ -23,6 +25,7 @@
     "ytdl-core": "^0.29.2"
   },
   "devDependencies": {
-    "browserify": "^16.2.3"
+    "browserify": "^16.2.3",
+    "electron-packager": "^13.1.1"
   }
 }

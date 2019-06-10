@@ -1,9 +1,6 @@
 global.$ = require('jquery');
-//const searchForVideo = require('./utils/search.js').searchForVideo;
-//const searchForDurations = require('./utils/search.js').searchForDurations;
 const timeConverter = require('iso8601-duration');
 const electron = require('electron');
-const fs = require('browserify-fs');
 const request = require('request');
 const encodeurl = require('encodeurl');
 const config = require('../config/config.json');
@@ -72,42 +69,49 @@ function submitButtonEvent() {
             });
 
             searchForDurations(videoIDSCSV, (rsp) => {
-                var counter = 1
-                rsp.items.forEach((idResult) => {
-                    var videoID = idResult.id;
-                    var thumbnailURL = videoData[videoID]['thumbnailURL'];
-                    var title = videoData[videoID]['title'];
-
-                    var duration = idResult.contentDetails.duration;
-                    var durationObject = timeConverter.parse(duration);
-
-                    var hours = durationObject.hours.toString().length === 1 ? `0${durationObject.hours}` : `${durationObject.hours}`;
-                    var minutes = durationObject.minutes.toString().length === 1 ? `0${durationObject.minutes}` : `${durationObject.minutes}`;
-                    var seconds = durationObject.seconds.toString().length === 1 ? `0${durationObject.seconds}` : `${durationObject.seconds}`;
-
-                    var formattedTime = durationObject.hours > 0 ? `${hours}:${minutes}:${seconds}` : `${minutes}:${seconds}`;
-
-                    //accomodates for proper css formatting when including hours in the timestamp.
-                    var classGenerator = durationObject.hours > 0 ? `timestamp hashours` : `timestamp`;
-
-                    $('.videogrid').append(
-                        `<div class="video" id="video${counter}" data-id="${idResult.id}"> 
-                            <img src="${thumbnailURL}"> 
-                            <span class="${classGenerator}">${formattedTime}</span>
-                            <p>${title}</p>
-                        </div>`
-                        );
-
-                    counter += 1;
+                displayVideos(rsp, videoData, () => {
+                    videoSelectorEvent();
+                    videoGridButtonsEvent();
                 });
-
-                videoSelectorEvent();
-                videoGridButtonsEvent();
             });
 
         });
     });
 }
+
+
+function displayVideos(rsp, videoData, cb) {
+    var counter = 1
+    rsp.items.forEach((idResult) => {
+        var videoID = idResult.id;
+        var thumbnailURL = videoData[videoID]['thumbnailURL'];
+        var title = videoData[videoID]['title'];
+
+        var duration = idResult.contentDetails.duration;
+        var durationObject = timeConverter.parse(duration);
+
+        var hours = durationObject.hours.toString().length === 1 ? `0${durationObject.hours}` : `${durationObject.hours}`;
+        var minutes = durationObject.minutes.toString().length === 1 ? `0${durationObject.minutes}` : `${durationObject.minutes}`;
+        var seconds = durationObject.seconds.toString().length === 1 ? `0${durationObject.seconds}` : `${durationObject.seconds}`;
+
+        var formattedTime = durationObject.hours > 0 ? `${hours}:${minutes}:${seconds}` : `${minutes}:${seconds}`;
+
+        //accomodates for proper css formatting when including hours in the timestamp.
+        var classGenerator = durationObject.hours > 0 ? `timestamp hashours` : `timestamp`;
+
+        $('.videogrid').append(
+            `<div class="video" id="video${counter}" data-id="${idResult.id}"> 
+                <img src="${thumbnailURL}"> 
+                <span class="${classGenerator}">${formattedTime}</span>
+                <p>${title}</p>
+            </div>`
+            );
+
+        counter += 1;
+    });
+    cb();
+}
+
 
 function videoSelectorEvent() {
     $('.video').on('click', (event) => {
@@ -143,28 +147,32 @@ function videoGridButtonsEvent() {
         var videoTitle = $('.selected > p').text();
 
         electron.ipcRenderer.send('download-video', selectedVideoID);
-        electron.ipcRenderer.on('confirm-download', (event, arg) => {
+        electron.ipcRenderer.on('confirm-download', (event, userDataPath) => {
             $('.playlistbox ul').append(`<li data-id="${selectedVideoID}"><p><i>${videoTitle}</i></p><span>${duration}</span><span class="delete"></span></li>`);
             removeMusicEvent(); 
             var musicplayer = $('#musicplayer')[0];
             if (musicplayer.paused || $('.playlistbox ul').children().length === 1) {
-                $('#musicplayer').attr("src", `../MusicData/${selectedVideoID}.mp3`);
+                $('#musicplayer').attr("src", `${userDataPath}/MusicData/${selectedVideoID}.mp3`);
                 $('#musicplayer').trigger('play');
             }
 
             musicplayer.onended = function() {
                 electron.ipcRenderer.removeAllListeners('confirm-remove');
-                var toBeRemoved = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+                var toBeRemovedID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
                 $('.playlistbox ul li:nth-of-type(1)').remove();
-                console.log($(`.playlistbox ul li[data-id=${toBeRemoved}]`).length);
-                if ($(`.playlistbox[data-id=${toBeRemoved}]`).length >= 1) {
-                    console.log('mood');
-                    playListLogic(toBeRemoved);
+                if ($(`.playlistbox ul li[data-id=${toBeRemovedID}]`).length >= 1) {
+                    var currentPlayingSongID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+                    if (currentPlayingSongID === toBeRemovedID) {
+                        playListLogic(userDataPath, toBeRemovedID);
+                    } else {
+                        
+                        playListLogic(userDataPath, currentPlayingSongID);
+                    }
                 } else {
-                    electron.ipcRenderer.send('remove-mp3', toBeRemoved);
-                    electron.ipcRenderer.on('confirm-remove', (event, arg) => {
+                    electron.ipcRenderer.send('remove-mp3', toBeRemovedID);
+                    electron.ipcRenderer.on('confirm-remove', (event, userDataPath) => {
                         console.log('meeeee');
-                        playListLogic(toBeRemoved);
+                        playListLogic(userDataPath, toBeRemovedID);
                     });
                 }
             }
@@ -178,10 +186,10 @@ function removeMusicEvent() {
     });
 }
 
-function playListLogic(selectedVideoID) {
+function playListLogic(userDataPath, selectedVideoID) {
     if ($('.playlistbox ul').children().length > 0) {
         selectedVideoID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
-        $('#musicplayer').attr("src", `../MusicData/${selectedVideoID}.mp3`);
+        $('#musicplayer').attr("src", `${userDataPath}/MusicData/${selectedVideoID}.mp3`);
         $('#musicplayer').trigger('play');
     }
 }

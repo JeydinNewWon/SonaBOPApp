@@ -2,6 +2,9 @@ const electron = require('electron');
 const fs = require('fs');
 const ytdl = require('ytdl-core');
 const ffmpeg = require('fluent-ffmpeg');
+const appRootDir = require('app-root-dir').get();
+const ffmpegPath = appRootDir + '/node_modules/ffmpeg/ffmpeg';
+const userDataPath = electron.app.getPath('userData');
 
 function createWindow() {
     let win = new electron.BrowserWindow({
@@ -13,31 +16,32 @@ function createWindow() {
     });
 
     win.loadFile('html/index.html');
+    console.log(__dirname);
 }
 
-if (!fs.existsSync('./MusicData/')) {
-    fs.mkdirSync('./MusicData/');
+if (!fs.existsSync(`${userDataPath}/MusicData/`)) {
+    fs.mkdirSync(`${userDataPath}/MusicData/`);
 }
 
 electron.ipcMain.on('download-video', (event, arg) => {
-    ffmpeg.setFfmpegPath('./bin/ffmpeg');
+    ffmpeg.setFfmpegPath(ffmpegPath);
     var stream = ytdl(arg, {
         quality: "highestaudio"
     });
     ffmpeg(stream)
         .audioBitrate(128)
-        .save(`./MusicData/${arg}.mp3`)
+        .save(`${userDataPath}/MusicData/${arg}.mp3`)
         .on('end', () => {
-            event.sender.send('confirm-download', 'done');
+            event.sender.send('confirm-download', userDataPath);
         });
 });
 
 electron.ipcMain.on('remove-mp3', (event, arg) => {
-    fs.unlink(`./MusicData/${arg}.mp3`, (err) => {
+    fs.unlink(`${userDataPath}/MusicData/${arg}.mp3`, (err) => {
         if (err) {
             event.sender.send('confirm-remove', err);
         } else {
-            event.sender.send('confirm-remove', 'done');
+            event.sender.send('confirm-remove', userDataPath);
         }
     });
 })

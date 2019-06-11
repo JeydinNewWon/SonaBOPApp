@@ -205,7 +205,9 @@ function videoGridButtonsEvent() {
                 } else {
                     // send a request to the main process to remove the song from storage.
                     electron.ipcRenderer.send('remove-mp3', toBeRemovedID);
+                    // after the song has been removed from storage,
                     electron.ipcRenderer.on('confirm-remove', (event, userDataPath) => {
+                        // continue the playlist.
                         playListLogic(userDataPath, 'main', toBeRemovedID);
                     });
                 }
@@ -214,88 +216,132 @@ function videoGridButtonsEvent() {
     });
 }
 
+// called when the load button, save button and cancel button are pressed.
 function loadPlaylistEvents() {
+    // when load button is pressed;
     $('#loadbutton').on('click', (event) => {
+        // remove the loadbutton and display the loadplaylist menu.
         $('.loadplaylist').css('display', 'block');
         $('#loadbutton').css('display', 'none');
+
+        // request the main process to load all the playlists
         electron.ipcRenderer.send('load-playlist-folders');
+        // once all the playlists have been loaded
         electron.ipcRenderer.once('load-playlist-folders-rsp', (event, playListFolders) => {
+            // loop through the array of playlists given
             playListFolders.forEach((folder) => {
+                // if the contents of the storage does not equal .DS_Store or folder main,
                 if (folder !== '.DS_Store' && folder !== 'main') {
+                    // append the playlist to the loadplaylist menu.
                     $('.loadplaylist ul').append(`<li>${folder}</li>`);
                 }
             });
+
+            // register the event for when a list item is clicked.
             readPlaylistEvent();
         });
     });
 
+    // when save button is pressed,
     $('#savebutton').on('click', (event) => {
+        // if there is an error message, remove it.
         if ($('#errormsg').length) {
             $('#errormsg').remove();
         }
-
+        // create a user prompt.
         prompt({ title: 'Save Playlist' , label: 'Enter Playlist Name: '}).then((playListName) => {
+            // if the playList name is not given, cancel the function.
             if (playListName === null) {
                 return;
             } else {
+                // initiate a counter,
                 var counter = 1;
+                // set playListContents object to empty.
                 var playlistContents = {};
 
+                // if the there are no elements in the playlist currently,
                 if ($('.playlistbox ul li').length === 0) {
+                    // if videogrid exists,
                     if ($('.videogrid').length) {
+                        // display an error message to screen: "Please add items to the playlist."
                         $('.videogrid').before(`<p id="errormsg">Please add items to the playlist</p>`);
                     } else {
+                        // display an error message to screen: "Please add items to the playlist."
                         $('#searchwrap > h1').after('<p id="errormsg">Please add items to the playlist</p>');
                     }
+
+                    // cancel the function.
                     return;
                 }
         
+                // for each element in the playlist.
                 $('.playlistbox ul li').toArray().forEach(() => {
+                    // create the selector element.
                     var selector = `.playlistbox ul li:nth-of-type(${counter})`;
         
+                    // select the list element and extract title, id and duration.
                     var title = $(selector + ' > p').text();
                     var id = $(selector).attr('data-id');
                     var duration = $(selector + ' .playlistduration').text();
         
+                    // add the data to the playListContents object.
                     playlistContents[id] = {
                         "title": title,
                         "duration": duration
                     }
         
+                    // increment the counter.
                     counter += 1;
                 });
 
+                // send a request to the main process to save the playlist contents to the playlist storage.
                 electron.ipcRenderer.send('save-playlist-folders', playListName, playlistContents);
+                // once the files have been saved,
                 electron.ipcRenderer.once('confirm-save-playlist-folders', (event, rsp) => {
+                    // if the videogrid exists,
                     var isVideoGridExists = $('.videogrid').length;
 
+                    // if videogrid exists and response is 'mainIsReserved'
                     if (rsp === "mainIsReserved" && isVideoGridExists) {
+                        // display error message to screen saying that the playlist name is reserved.
                         $('.videogrid').before('<p id="errormsg">Sorry, that playlist name is reserved.</p>');
 
                     } else if (rsp === "mainIsReserved" && !isVideoGridExists) {
+                        // display error message to screen saying that the playlist name is reserved.
                         $('#searchwrap > h1').after('<p id="errormsg">Sorry, that playlist name is reserved.</p>');
                     }
 
+                    // if the response is already exists,
                     if (rsp === "alreadyExists" && isVideoGridExists) {
+                        // display error message to screen saying that the playlist already exists.
                         $('.videogrid').before('<p id="errormsg">That playlist already exists.</p>');
 
                     } else if (rsp === "alreadyExits" && !isVideoGridExists) {
+                        // display error message to screen saying that the playlist already exists.
                         $('#searchwrap > h1').after('<p id="errormsg">That playlist already exists.</p>');
 
                     } 
 
+                    // if response is not alreadyExists and is not mainIsReserved and videoGridExists,
                     if (rsp !== "alreadyExists" && rsp !== "mainIsReserved" && isVideoGridExists) {
+                        // display Successfully saved playlist to screen.
                         $('.videogrid').before(`<p id="confirmmsg">Successfully saved playlist!</p>`);
                     } else if (rsp !== "alreadyExists" && rsp !== "mainIsReserved") {
+                        // display Successfully saved playlist to screen.
                         $('#searchwrap > h1').after('<p id="confirmmsg">Successfully saved playlist!</p>');
                     }
 
+                    // wait 3 seconds,
                     setTimeout(() => {
+                        // if there is error message,
                         if($('#errormsg').length) {
+                            // delete it.
                             $('#errormsg').remove();
                         }
-    
+
+                        // if there is a confirm message,
                         if ($('#confirmmsg').length) {
+                            // delete it.
                             $('#confirmmsg').remove();
                         }
                     }, 3000);
@@ -306,32 +352,60 @@ function loadPlaylistEvents() {
         });
     });
 
+    // if the load cancel button is pressed,
     $('#loadcancelbutton').on('click', () => {
+        // run the loadPlayListTools function.
         loadPlayListTools();
     });
 }
 
+// readPlayListEvent is called when a list element of the loadplaylistmenu is pressed.
 function readPlaylistEvent() {
+    // if list element of the loadplaylistmenu is pressed,
     $('.loadplaylist ul li').on('click', (event) => {
+        // get the name of the playListToLoad
         var playListToLoad = $(event.currentTarget).text();
+
+        // send a request to the main process to read the given playList.
         electron.ipcRenderer.send('read-playlist', playListToLoad);
+
+        // once the playList has been read,
         electron.ipcRenderer.once('read-playlist-rsp', (event, playListToLoadPath, userDataPath, obj) => {
+            // run the loadPlayListTools function.
             loadPlayListTools();
+
+            // remove all elements in playlistbox.
             $('.playlistbox ul li').remove();
+            
+            // get the videoIDs from info.json 
             var videoIDS = Object.keys(obj);
+
+            // reverse the array.
             videoIDS = videoIDS.reverse();
+
+            // for each videoID,
             videoIDS.forEach((id) => {
+                // append id, title and duration to the playlist to create another song.
                 $('.playlistbox ul').append(`<li data-id="${id}"><p><i>${obj[id]["title"]}</i></p><span class="playlistduration">${obj[id]["duration"]}</span><span class="delete"></span></li>`);
             });
+
+            // change the source file of the music to the song load path of the first element in the playlist.
             $('#musicplayer').attr('src', `${playListToLoadPath}/${videoIDS[0]}.mp3`);
+            // play the song.
             $('#musicplayer').trigger('play');
 
+            // get HTML element of music player.
             var musicplayer = $('#musicplayer')[0];
 
+            // once music player has ended.
             musicplayer.onended = function() {
+                // get toBeRemovedID of the song to be removed.
                 var toBeRemovedID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+                // remove the first song from the playlist.
                 $('.playlistbox ul li:nth-of-type(1)').remove();
+                // get the id of the new song from the playlist
                 var currentPlayingSongID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
+                // run playListLogic function.
                 playListLogic(userDataPath, playListToLoad, currentPlayingSongID);
             }
 

@@ -3,7 +3,7 @@
 SonaBOP App is an application developed for downloading music and streaming it within your Desktop. Built using the electron library.
 
 
-Special thanks to the authors of the following node libararies for making this application possible:
+Special thanks to the authors of the following node libraries for making this application possible:
 
 
 * app-root-dir

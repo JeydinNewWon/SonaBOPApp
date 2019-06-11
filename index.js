@@ -81,7 +81,11 @@ electron.ipcMain.on('save-playlist-folders', (event, playlistName, playlistConte
         });
 
     } else {
-        event.sender.send('confirm-save-playlist-folders', 'Already Exists');
+        if (playlistName === "main") {
+            event.sender.send('confirm-save-playlist-folders', 'mainIsReserved');
+        } else {
+            event.sender.send('confirm-save-playlist-folders', 'alreadyExists');
+        }
     }
 });
 

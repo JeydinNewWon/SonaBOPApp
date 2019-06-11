@@ -1,14 +1,15 @@
 // import all required libraries.
 global.$ = require('jquery');
-const timeConverter = require('iso8601-duration');
 const electron = require('electron');
-const request = require('request');
-const encodeurl = require('encodeurl');
 const prompt = require('electron-prompt');
 
-// import the API credentials.
-const config = require('../config/config.json');
-const youtubeAPIKey = config.youtubeAPIKey;
+// import all functions.
+const search = require('./utils/search.js')
+const searchForVideo = search.searchForVideo;
+const searchForDurations = search.searchForDurations;
+const displayVideos = require('./utils/displayVideo.js');
+const loadPlayListTools = require('./utils/loadPlayListTools.js');
+const playListLogic = require('./utils/playListLogic.js');
 
 // main function that registers the events to work in the DOM.
 function main() {
@@ -266,17 +267,38 @@ function loadPlaylistEvents() {
 
                 electron.ipcRenderer.send('save-playlist-folders', playListName, playlistContents);
                 electron.ipcRenderer.once('confirm-save-playlist-folders', (event, rsp) => {
-                    if ($('.videogrid').length) {
-                        $('.videogrid').before(`<p id="confirmmsg">Successfully saved playlist!</p>`);
-                        setTimeout(() => {
-                            $('#confirmmsg').remove();
-                        }, 3000);
-                    } else {
-                        $('#searchwrap > h1').after('<p id="confirmmsg">Successfully saved playlist!</p>');
-                        setTimeout(() => {
-                            $('#confirmmsg').remove();
-                        }, 3000);
+                    var isVideoGridExists = $('.videogrid').length;
+
+                    if (rsp === "mainIsReserved" && isVideoGridExists) {
+                        $('.videogrid').before('<p id="errormsg">Sorry, that playlist name is reserved.</p>');
+
+                    } else if (rsp === "mainIsReserved" && !isVideoGridExists) {
+                        $('#searchwrap > h1').after('<p id="errormsg">Sorry, that playlist name is reserved.</p>');
                     }
+
+                    if (rsp === "alreadyExists" && isVideoGridExists) {
+                        $('.videogrid').before('<p id="errormsg">That playlist already exists.</p>');
+
+                    } else if (rsp === "alreadyExits" && !isVideoGridExists) {
+                        $('#searchwrap > h1').after('<p id="errormsg">That playlist already exists.</p>');
+
+                    } 
+
+                    if (rsp !== "alreadyExists" && rsp !== "mainIsReserved" && isVideoGridExists) {
+                        $('.videogrid').before(`<p id="confirmmsg">Successfully saved playlist!</p>`);
+                    } else if (rsp !== "alreadyExists" && rsp !== "mainIsReserved") {
+                        $('#searchwrap > h1').after('<p id="confirmmsg">Successfully saved playlist!</p>');
+                    }
+
+                    setTimeout(() => {
+                        if($('#errormsg').length) {
+                            $('#errormsg').remove();
+                        }
+    
+                        if ($('#confirmmsg').length) {
+                            $('#confirmmsg').remove();
+                        }
+                    }, 3000);
                 });
             }
         }).catch((err) => {
@@ -317,97 +339,12 @@ function readPlaylistEvent() {
     });
 }
 
-// searchForVideo function.
-function searchForVideo(searchquery, cb) {
-
-    // get the query and encode it into a url format.
-    var encodedquery = encodeurl(searchquery);
-    
-    // request from the YouTube Data API and get the 10 search results.
-    request.get(`https://www.googleapis.com/youtube/v3/search/?part=snippet&q=${encodedquery}&maxResults=10&key=${youtubeAPIKey}`, (err, rsp, body) => {
-        // run the callback with the response body as parameter.
-        cb(JSON.parse(rsp.body));
-    });
-}
-
-// searchForDuration function. Searches for video durations from the YouTubeDataAPI.
-function searchForDurations(videoIDCSV, cb) {
-    // request from the YouTube Data API and get the durations.
-    request.get(`https://www.googleapis.com/youtube/v3/videos/?part=contentDetails&id=${videoIDCSV}&key=${youtubeAPIKey}`, (err, rsp, body ) => {
-        // run the callback with the response body as parameter.
-        cb(JSON.parse(rsp.body));
-    });
-}
-
-// displayVideos function displays video data to the screen.
-function displayVideos(rsp, videoData, cb) {
-    // initiate a counter.
-    var counter = 1
-    // for each of the videos in the returned from the response,
-    rsp.items.forEach((idResult) => {
-        // get the videoID, thumbnailURL and title from the videoData Object.
-        var videoID = idResult.id;
-        var thumbnailURL = videoData[videoID]['thumbnailURL'];
-        var title = videoData[videoID]['title'];
-
-        // get the duration from the searchForDuration response;
-        var duration = idResult.contentDetails.duration;
-        // parse the iso8601 format to an Object.
-        var durationObject = timeConverter.parse(duration);
-
-        // format the times, adding 0's in front of single-digit values for h, m or s , while leaving double-digit values for h,m or s alone.
-        var hours = durationObject.hours.toString().length === 1 ? `0${durationObject.hours}` : `${durationObject.hours}`;
-        var minutes = durationObject.minutes.toString().length === 1 ? `0${durationObject.minutes}` : `${durationObject.minutes}`;
-        var seconds = durationObject.seconds.toString().length === 1 ? `0${durationObject.seconds}` : `${durationObject.seconds}`;
-
-        // if the video has hours, add hours in front, else, leave it in m:s.
-        var formattedTime = durationObject.hours > 0 ? `${hours}:${minutes}:${seconds}` : `${minutes}:${seconds}`;
-
-        // accomodates for proper css formatting when including hours in the timestamp.
-        var classGenerator = durationObject.hours > 0 ? `timestamp hashours` : `timestamp`;
-
-        // create a video box and display onto the screen.
-        $('.videogrid').append(
-            `<div class="video" id="video${counter}" data-id="${idResult.id}"> 
-                <img src="${thumbnailURL}"> 
-                <span class="${classGenerator}">${formattedTime}</span>
-                <p>${title}</p>
-            </div>`
-            );
-
-        // increment the counter.
-        counter += 1;
-    });
-
-    // run the callback to register the events.
-    cb();
-}
 
 function removeMusicEvent() {
     // remove the song if the 'x' button is clicked in the playlistbox.
     $('.delete').on('click', (event) => {
         $(event.currentTarget.parentElement).remove();
     });
-}
-
-function loadPlayListTools() {
-    // button logic to create a toggle system for the load playlist button.
-    $('.loadplaylist').css('display', 'none');
-    $('.loadplaylist ul li').remove();
-    $('#loadbutton').css('display', 'block');
-}
-
-// playListLogic is the main function that powers the automatic queue system.
-function playListLogic(userDataPath, playListName, selectedVideoID) {
-    // if there are still elements left in the playlist,
-    if ($('.playlistbox ul').children().length > 0) {
-        // get the videoID of the top song.
-        selectedVideoID = $('.playlistbox ul li:nth-of-type(1)').attr('data-id');
-        // set the source of music to the respective .mp3 file.
-        $('#musicplayer').attr("src", `${userDataPath}/MusicData/${playListName}/${selectedVideoID}.mp3`);
-        // play the song.
-        $('#musicplayer').trigger('play');
-    }
 }
 
 $(document).ready(main);

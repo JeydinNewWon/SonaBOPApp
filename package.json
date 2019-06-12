@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "electron .",
-    "build": "electron-packager --icon=\"./SonaBOPIcon.icns\" . SonaBOP"
+    "build": "electron-packager --icon=\"./SonaBOPIcon.icns\" --overwrite . SonaBOP"
   },
   "author": "JeydinNewWon",
   "license": "ISC",

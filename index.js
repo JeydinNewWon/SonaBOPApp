@@ -19,6 +19,83 @@ function createWindow() {
         }
     });
     win.loadFile('html/index.html');
+    ffmpeg.setFfmpegPath(ffmpegPath);
+
+
+
+    var template = [
+        {
+            label: 'SonaBOP',
+            submenu: [
+                { role: 'about' },
+                { type: 'separator' },
+                { role: 'services' },
+                { type: 'separator' },
+                { role: 'hide' },
+                { role: 'hideothers' },
+                { role: 'unhide' },
+                { type: 'separator' },
+                { role: 'quit' }
+            ]
+        },
+        {
+            label: 'File',
+            submenu: [
+                 { role: 'close' },
+            ]
+        },
+        {
+            label: 'Edit',
+            submenu: [
+                { role: 'undo' },
+                { role: 'redo' },
+                { type: 'separator' },
+                { role: 'cut' },
+                { role: 'copy' },
+                { role: 'paste' },
+                { role: 'pasteAndMatchStyle' },
+                { role: 'delete' },
+                { role: 'selectAll' }
+            ]
+        },
+        {
+            label: 'View',
+            submenu: [
+                { role: 'reload' },
+                { role: 'forcereload' },
+                { type: 'separator' },
+                { role: 'resetzoom' },
+                { role: 'zoomin' },
+                { role: 'zoomout' },
+                { type: 'separator' },
+                { role: 'togglefullscreen' }
+            ]
+        },
+        {
+            label: 'Window',
+            submenu: [
+              { role: 'minimize' },
+              { role: 'zoom' }
+            ]
+        },
+        {
+            role: 'help',
+            submenu: [
+                {
+                    label: 'Getting Started',
+                    click () { electron.shell.openExternalSync('https://drive.google.com/open?id=1cZ5trXpPBIvd_ZZsJnqwUwn9e3EPWpvx') }
+                },
+                {
+                    label: 'User Manual',
+                    click () { electron.shell.openExternalSync('https://drive.google.com/open?id=1HYFeljx9E4v2r1UdOvbyaiZ_xFyd9Iol') }
+                }
+            ]
+        }
+    ];
+
+    const menu = electron.Menu.buildFromTemplate(template);
+    electron.Menu.setApplicationMenu(menu);
+
 }
 
 
@@ -38,7 +115,6 @@ electron.app.on('quit', () => {
 
 
 electron.ipcMain.on('download-video', (event, arg) => {
-    ffmpeg.setFfmpegPath(ffmpegPath);
     var stream = ytdl(arg, {
         quality: "highestaudio"
     });

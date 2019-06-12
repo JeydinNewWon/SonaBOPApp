@@ -149,10 +149,13 @@ function videoGridButtonsEvent() {
         var duration = $('.selected > span').text();
         var videoTitle = $('.selected > p').text();
 
+        $('.downloadbutton').css('display', 'none');
+
         // send a request to the main process to download the video.
         electron.ipcRenderer.send('download-video', selectedVideoID);
         // once the main process is finished downloading and replies to the renderer process,
         electron.ipcRenderer.on('confirm-download', (event, userDataPath) => {
+            $('.downloadbutton').css('display', 'block');
             // append the new video to the playlist.
             $('.playlistbox ul').append(`<li data-id="${selectedVideoID}"><p><i>${videoTitle}</i></p><span class="playlistduration">${duration}</span><span class="delete"></span></li>`);
 

@@ -22,7 +22,7 @@
     "jsonfile": "^5.0.0",
     "ncp": "^2.0.0",
     "request": "^2.88.0",
-    "shelljs": "^0.8.3",
+    "shelljs": "^0.8.5",
     "unescape": "^1.0.1",
     "ytdl-core": "^0.29.2"
   },
